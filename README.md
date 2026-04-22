@@ -4,7 +4,6 @@
 
 ---
 
-<<<<<<< HEAD
 Released for **educational and research purposes only.**
 
 **License notice (from original):** You are NOT allowed to sell or publish this application without the source code and this README. Redistribution requires full source + credits. Non-negotiable.
@@ -62,15 +61,3 @@ Released for **educational and research purposes only.**
 
 For educational and research use only. The authors are not responsible for any misuse.
 If you use this to steal, you're not a hacker — you're a thief. Act accordingly.
-=======
-Credit for the original encryption algorithm goes to the MIKAI team.ù
-
-
-* **Quick Charge 19€**: Aggiunta funzione rapida per impostare il credito a 19.00€ con scrittura automatica.
-* **Refactoring Core**: Sostituito lo switch-case massivo in `mykey_reset` con logica data-driven.
-* **Centralizzazione Costanti**: Eliminazione dei magic numbers in `cogs_mikai.h`.
-* **Abstraction Layer GUI**: Introdotte utility per popup e dialoghi in `cogs_mikai_app.c`, riducendo il boilerplate nelle scene.
-
-* **Logic Optimization**: Implementato helper `update_block_optimized` per gestire checksum, encoding e XOR in un unico step.
-* **NFC Driver**: Migliorata la stabilità in `nfc_srix.c`.
->>>>>>> origin/master
