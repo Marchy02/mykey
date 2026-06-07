@@ -34,6 +34,11 @@ def parse_mykey_file(filename):
         print(f"Error reading file: {e}")
         return False
 
+    # Guard against an empty file: lines[0] below would raise IndexError.
+    if not lines:
+        print("Error: File is empty")
+        return False
+
     # Verify header
     if not lines[0].startswith("COGES_MYKEY_V1"):
         print("Error: Invalid file format (missing header)")

@@ -132,6 +132,14 @@ void cogs_mikai_scene_load_file_on_enter(void* context) {
             storage_file_close(file);
 
             if(success) {
+                // Mirror the live-read path so the loaded card is re-writable:
+                // capture a clean baseline (write path diffs against it) and
+                // recompute the session key from the UID + vendor blocks instead
+                // of trusting the key stored in the file.
+                memcpy(app->mykey.eeprom_baseline, app->mykey.eeprom,
+                       sizeof(app->mykey.eeprom));
+                mykey_calculate_encryption_key(&app->mykey);
+
                 app->mykey.is_loaded = true;
                 app->mykey.is_modified = false;
                 app->mykey.is_reset = mykey_is_reset(&app->mykey);

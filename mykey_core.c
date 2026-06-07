@@ -5,7 +5,6 @@
 #include <storage/storage.h>
 
 // Encode or decode a MyKey block using XOR bit manipulation.
-<<<<<<< HEAD
 // Core MIKAI algorithm: 3-stage symmetric bit-permutation within a 32-bit word.
 // Applying it twice is a no-op (self-inverse), so encode == decode.
 static inline void encode_decode_block(uint32_t* block) {
@@ -16,17 +15,6 @@ static inline void encode_decode_block(uint32_t* block) {
     *block ^= (*block & 0x30000000) >> 6 | (*block & 0x0C000000) >> 12 | (*block & 0x03000000) >> 18 |
               (*block & 0x00003000) << 6 | (*block & 0x00000030) << 12 | (*block & 0x0000000C) << 6;
     // Stage 3: mirror of stage 1 to close the permutation
-=======
-// This is the core MIKAI algorithm. It rearranges bits within the 32-bit block.
-static inline void encode_decode_block(uint32_t* block) {
-    // Stage 1: Initial bit swapping
-    *block ^= (*block & 0x00C00000) << 6 | (*block & 0x0000C000) << 12 | (*block & 0x000000C0) << 18 |
-              (*block & 0x000C0000) >> 6 | (*block & 0x00030000) >> 12 | (*block & 0x00000300) >> 6;
-    // Stage 2: Middle bit swapping
-    *block ^= (*block & 0x30000000) >> 6 | (*block & 0x0C000000) >> 12 | (*block & 0x03000000) >> 18 |
-              (*block & 0x00003000) << 6 | (*block & 0x00000030) << 12 | (*block & 0x0000000C) << 6;
-    // Stage 3: Repeat initial swap (symmetric property)
->>>>>>> origin/master
     *block ^= (*block & 0x00C00000) << 6 | (*block & 0x0000C000) << 12 | (*block & 0x000000C0) << 18 |
               (*block & 0x000C0000) >> 6 | (*block & 0x00030000) >> 12 | (*block & 0x00000300) >> 6;
 }
@@ -196,9 +184,11 @@ uint16_t mykey_get_credit_from_history(MyKeyData* key) {
         return 0xFFFF; // Invalid offset
     }
 
-    // Get most recent transaction (offset 8 in the circular buffer)
-    // Blocks are already in big-endian format, credit is in lower 16 bits
-    uint32_t txn_block = key->eeprom[0x34 + ((starting_offset + 8) % 8)];
+    // Get most recent transaction in the 8-slot circular buffer.
+    // (offset+7)%8 is the slot written most recently; (offset+8)%8 == offset
+    // would point back at the OLDEST slot, so use +7.
+    // Blocks are already in big-endian format, credit is in lower 16 bits.
+    uint32_t txn_block = key->eeprom[0x34 + ((starting_offset + 7) % 8)];
     uint16_t credit = txn_block & 0xFFFF;
 
     FURI_LOG_D(TAG, "Credit from transaction history: %d cents", credit);
@@ -312,7 +302,6 @@ void mykey_reset(MyKeyData* key) {
     uint32_t date_bytes = (production_date & 0x0000FF00) << 8 |
                           (production_date & 0x00FF0000) >> 8 | (production_date & 0xFF000000) >> 24;
 
-<<<<<<< HEAD
     // 3. Update the four mirror groups of 4 blocks each.
     // Groups start at: 0x10, 0x14, 0x3F, 0x43
     // Layout within each group: [date_block, key_id, op_counter, flags]
@@ -324,20 +313,6 @@ void mykey_reset(MyKeyData* key) {
         update_block_optimized(key, b + 1, key_id_full,  false, 0);
         update_block_optimized(key, b + 2, 1,            false, 0); // op counter = 1
         update_block_optimized(key, b + 3, 0x00040013,   false, 0);
-=======
-    // 3. Update blocks using optimized helper
-    // Blocks 0x10, 0x11, 0x12, 0x13... and their mirrors
-    const uint8_t mirror_offsets[] = {0x00, 0x04, 0x2F, 0x33}; // 0x10->0x10, 0x10->0x14, 0x10->0x3F, 0x10->0x43
-
-    for(size_t m = 0; m < 4; m++) {
-        uint8_t base = (m < 2) ? 0x10 : 0x3F;
-        uint8_t off = mirror_offsets[m];
-
-        update_block_optimized(key, base + (off % 4) + 0, date_block, false, 0); // 10, 14, 3F, 43
-        update_block_optimized(key, base + (off % 4) + 1, key_id_full, false, 0); // 11, 15, 40, 44
-        update_block_optimized(key, base + (off % 4) + 2, 1, false, 0); // 12, 16, 41, 45 (Op counter)
-        update_block_optimized(key, base + (off % 4) + 3, 0x00040013, false, 0); // 13, 17, 42, 46
->>>>>>> origin/master
     }
 
     // Vendor and generic blocks

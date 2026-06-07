@@ -56,26 +56,14 @@ bool mykey_read_from_nfc(COGSMyKaiApp* app) {
         st25tb_data->uid[0], st25tb_data->uid[1], st25tb_data->uid[2], st25tb_data->uid[3],
         st25tb_data->uid[4], st25tb_data->uid[5], st25tb_data->uid[6], st25tb_data->uid[7]);
 
-<<<<<<< HEAD
     // Copy blocks to MyKey data structure.
     // ST25TB stores blocks little-endian; bswap32 converts to the big-endian
     // format expected by the MIKAI algorithm.
-=======
-    // Copy blocks to MyKey data structure
-    // ST25TB blocks need byte-swapping to match libmikai's big-endian format
->>>>>>> origin/master
     size_t num_blocks = st25tb_get_block_count(type);
     if(num_blocks > SRIX4K_BLOCKS) {
         num_blocks = SRIX4K_BLOCKS;
     }
 
-<<<<<<< HEAD
-=======
-    // Backup current data to detect changes later
-    uint32_t old_eeprom[SRIX4K_BLOCKS];
-    memcpy(old_eeprom, app->mykey.eeprom, sizeof(old_eeprom));
-
->>>>>>> origin/master
     for(size_t i = 0; i < num_blocks; i++) {
         app->mykey.eeprom[i] = __bswap32(st25tb_data->blocks[i]);
     }
@@ -88,7 +76,6 @@ bool mykey_read_from_nfc(COGSMyKaiApp* app) {
     // Derive the session encryption key from UID + vendor blocks.
     mykey_calculate_encryption_key(&app->mykey);
 
-<<<<<<< HEAD
     // Update cached state.
     app->mykey.is_loaded   = true;
     app->mykey.is_modified = false;
@@ -99,18 +86,6 @@ bool mykey_read_from_nfc(COGSMyKaiApp* app) {
     mykey_auto_backup(app);
 
     FURI_LOG_I(TAG, "Card ready. Credit: %u cents | Reset: %s",
-=======
-    // Update cached values
-    app->mykey.is_loaded = true;
-    app->mykey.is_modified = false;
-    app->mykey.is_reset = mykey_is_reset(&app->mykey);
-    app->mykey.current_credit = mykey_get_current_credit(&app->mykey);
-
-    // Silent auto-backup (no popup, no interruption)
-    mykey_auto_backup(app);
-
-    FURI_LOG_I(TAG, "Card loaded. Credit: %d cents, Reset: %s",
->>>>>>> origin/master
                app->mykey.current_credit,
                app->mykey.is_reset ? "yes" : "no");
 
@@ -155,7 +130,6 @@ bool mykey_write_to_nfc(COGSMyKaiApp* app) {
         num_blocks = SRIX4K_BLOCKS;
     }
 
-<<<<<<< HEAD
     // Write only blocks that actually changed relative to the baseline captured
     // at read time. Block 0 is the UID (read-only on SRIX4K) — always skip it.
     size_t written = 0;
@@ -168,10 +142,6 @@ bool mykey_write_to_nfc(COGSMyKaiApp* app) {
             continue;
         }
 
-=======
-    // Write each block (skipping block 0 as it's typically the UID/Read-only)
-    for(size_t i = 1; i < num_blocks; i++) {
->>>>>>> origin/master
         uint32_t block_to_write = __bswap32(app->mykey.eeprom[i]);
         
         // OPTIMIZATION: Skip writing if the block is already the same on the card
@@ -184,13 +154,10 @@ bool mykey_write_to_nfc(COGSMyKaiApp* app) {
         if(error != St25tbErrorNone) {
             FURI_LOG_E(TAG, "Block 0x%02zX write failed: %d", i, error);
             success = false;
-<<<<<<< HEAD
             // Continue writing the remaining blocks; partial writes are better
             // than aborting mid-transaction and leaving the card inconsistent.
         } else {
             written++;
-=======
->>>>>>> origin/master
         }
     }
 
